@@ -45,6 +45,9 @@ run:
 	${PYTHON} ${EXAMPLES}/${PROGRAM} \
 	# ${ARGUMENTS}
 
+kernel:
+	DEBUG=5 NOOPT=1 ${PYTHON} examples/kernel.py
+
 clean:
 
 fclean: clean
