@@ -7,3 +7,7 @@ a = Tensor(x)
 b = Tensor(y)
 res = a.dot(b.T).numpy()
 print(res)
+
+tensor0 = Tensor(0)
+log_0 = tensor0.log()
+print(f"log 0 = {log_0}")
