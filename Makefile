@@ -7,8 +7,8 @@ ACTIVATE = ${BIN}/activate
 
 EXAMPLES = examples
 
-PROGRAM = matrix.py
-# PROGRAM = kernel.py
+# PROGRAM = matrix.py
+PROGRAM = kernel.py
 
 # ARGUMENTS =
 
