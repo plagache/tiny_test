@@ -7,8 +7,13 @@ a = Tensor(x)
 b = Tensor(w, requires_grad=True)
 res = a.dot(b.T)
 print(res.numpy())
+
 sum = res.sum()
 sum.backward()
+
+pow = res.pow(3)
+print(f"power: {pow}")
+
 print(f"b grad = {b.grad.numpy()}")
 print(f"b = {b}")
 print(f"b.view() = {b.view(-1, 3).numpy()}")
