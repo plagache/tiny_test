@@ -1,8 +1,7 @@
-SYSTEM_PYTHON = /usr/bin/python3
+PYTHON_VERSION = 3.12
 VENV = .venv
 BIN = ${VENV}/bin
-PYTHON = ${BIN}/python3
-PIP = ${BIN}/pip
+PYTHON = ${BIN}/python
 ACTIVATE = ${BIN}/activate
 
 EXAMPLES = examples
@@ -15,27 +14,27 @@ PROGRAM = kernel.py
 setup: venv pip_upgrade install
 
 venv:
-	${SYSTEM_PYTHON} -m venv ${VENV}
+	uv venv --python ${PYTHON_VERSION} ${VENV} --seed
 	ln -sf ${ACTIVATE} activate
 
 pip_upgrade:
-	${PIP} install --upgrade pip
+	uv pip install --upgrade pip
 
 install: \
 	requirements \
 	# module \
 #
-module: setup.py
-	${PIP} install -e . --upgrade
-
 requirements: requirements.txt
-	${PIP} install -r requirements.txt --upgrade
+	uv pip install -r requirements.txt --upgrade
+
+module: setup.py
+	uv pip install -e . --upgrade
 
 list:
-	${PIP} list
+	uv pip list
 
 version:
-	${PYTHON} --version
+	uv python list
 
 size:
 	du -hd 0
@@ -46,7 +45,8 @@ run:
 	# ${ARGUMENTS}
 
 kernel:
-	DEBUG=5 NOOPT=1 ${PYTHON} examples/kernel.py
+	DEBUG=5 NOOPT=1 ${PYTHON} ${EXAMPLES}/kernel.py
+	# DEBUG=5 ${PYTHON} ${EXAMPLES}/kernel.py
 
 clean:
 
