@@ -7,6 +7,7 @@ ACTIVATE = ${BIN}/activate
 EXAMPLES = examples
 
 # PROGRAM = matrix.py
+# PROGRAM = mnist.py
 PROGRAM = kernel.py
 
 # ARGUMENTS =
@@ -43,6 +44,12 @@ size:
 run:
 	${PYTHON} ${EXAMPLES}/${PROGRAM} \
 	# ${ARGUMENTS}
+
+mnist:
+	${PYTHON} ${EXAMPLES}/mnist.py
+	# CLANG=1 ${PYTHON} ${EXAMPLES}/mnist.py
+	# DEBUG=5 NOOPT=1 ${PYTHON} ${EXAMPLES}/kernel.py
+
 
 kernel:
 	DEBUG=5 NOOPT=1 ${PYTHON} ${EXAMPLES}/kernel.py
