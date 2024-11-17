@@ -3,6 +3,8 @@ import timeit
 from tinygrad import Context, Device, GlobalCounters, Tensor, TinyJit, nn
 from tinygrad.nn.datasets import mnist
 
+# watch -n0.1 nvidia-smi
+
 # gcc13-13.3.0-1  gcc13-libs-13.3.0-1  opencl-nvidia-565.57.01-1  cuda-12.6.2-2
 
 print(Device.DEFAULT)
