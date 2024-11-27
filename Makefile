@@ -47,6 +47,7 @@ run:
 
 mnist:
 	${PYTHON} ${EXAMPLES}/mnist.py
+	# BEAM=2 ${PYTHON} ${EXAMPLES}/mnist.py
 	# CLANG=1 ${PYTHON} ${EXAMPLES}/mnist.py
 	# DEBUG=5 NOOPT=1 ${PYTHON} ${EXAMPLES}/kernel.py
 

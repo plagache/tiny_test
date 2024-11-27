@@ -33,6 +33,8 @@ print(acc.item())  # ~10% accuracy, as expected from a random model
 
 optim = nn.optim.Adam(nn.state.get_parameters(model))
 batch_size = 128
+
+
 def step():
     Tensor.training = True  # makes dropout work
     samples = Tensor.randint(batch_size, high=X_train.shape[0])
@@ -42,16 +44,20 @@ def step():
     optim.step()
     return loss
 
-timeit.repeat(step, repeat=5, number=1)
+
+# timeit.repeat(step, repeat=5, number=1)
 
 GlobalCounters.reset()
-with Context(DEBUG=2): step()
+with Context(DEBUG=2):
+    step()
 
 jit_step = TinyJit(step)
 
-for step in range(1000):
-  loss = jit_step()
-  if step%100 == 0:
-    Tensor.training = False
-    acc = (model(X_test).argmax(axis=1) == Y_test).mean().item()
-    print(f"step {step:4d}, loss {loss.item():.2f}, acc {acc*100.:.2f}%")
+for step in range(300):
+    loss = jit_step()
+    if step % 100 == 0:
+        Tensor.training = False
+        acc = (model(X_test).argmax(axis=1) == Y_test).mean().item()
+        print(f"step {step:4d}, loss {loss.item():.2f}, acc {acc*100.:.2f}%")
+
+timeit.repeat(jit_step, repeat=5, number=1)
