@@ -2,6 +2,7 @@ import timeit
 
 from tinygrad import Context, Device, GlobalCounters, Tensor, TinyJit, nn
 from tinygrad.nn.datasets import mnist
+from resnet import ResNet
 
 # watch -n0.1 nvidia-smi
 
@@ -26,7 +27,9 @@ X_train, Y_train, X_test, Y_test = mnist()
 print(X_train.shape, X_train.dtype, Y_train.shape, Y_train.dtype)
 # (60000, 1, 28, 28) dtypes.uchar (60000,) dtypes.uchar
 
-model = Model()
+# model = Model()
+model = ResNet(18, 10)
+model.load_from_pretrained()
 acc = (model(X_test).argmax(axis=1) == Y_test).mean()
 # NOTE: tinygrad is lazy, and hasn't actually run anything by this point
 print(acc.item())  # ~10% accuracy, as expected from a random model
@@ -60,4 +63,4 @@ for step in range(300):
         acc = (model(X_test).argmax(axis=1) == Y_test).mean().item()
         print(f"step {step:4d}, loss {loss.item():.2f}, acc {acc*100.:.2f}%")
 
-timeit.repeat(jit_step, repeat=5, number=1)
+# timeit.repeat(jit_step, repeat=5, number=1)

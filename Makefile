@@ -8,7 +8,8 @@ EXAMPLES = examples
 
 # PROGRAM = matrix.py
 # PROGRAM = mnist.py
-PROGRAM = kernel.py
+# PROGRAM = kernel.py
+PROGRAM = efficientnet.py
 
 # ARGUMENTS =
 
@@ -53,8 +54,9 @@ mnist:
 
 
 kernel:
-	DEBUG=5 NOOPT=1 ${PYTHON} ${EXAMPLES}/kernel.py
-	# DEBUG=5 ${PYTHON} ${EXAMPLES}/kernel.py
+	DEBUG=4 NOOPT=1 ${PYTHON} ${EXAMPLES}/kernel.py
+	# DEBUG=4 CPU=1 ${PYTHON} ${EXAMPLES}/kernel.py
+	# DEBUG=4 ${PYTHON} ${EXAMPLES}/kernel.py
 
 clean:
 

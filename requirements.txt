@@ -1,2 +1,4 @@
 numpy
-tinygrad
+pillow
+lovely-grad
+git+https://github.com/tinygrad/tinygrad.git
