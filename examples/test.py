@@ -4,12 +4,14 @@ from enum import auto, IntEnum
 class Operations(IntEnum):
     ADD = auto()
     MUL = auto()
+    SUM = auto()
     NEG = auto()
 
 backward_operations = {
-    Operations.ADD: lambda context: (context, context),
-    Operations.MUL: lambda context, result: (result[1] * context, result[0] * context),
-    Operations.NEG: lambda context, result: (None),
+    Operations.ADD: lambda gradient: (gradient, gradient),
+    Operations.MUL: lambda gradient, parents: (parents[1] * gradient, parents[0] * gradient),
+    Operations.SUM: lambda gradient, parent: (np.full_like(parent, gradient)),
+    Operations.NEG: lambda gradient, parents: (None),
 }
 
 class Tensor():
@@ -29,6 +31,7 @@ class Tensor():
     def ADD(self, x):
         result = Tensor(self.data + x.data)
         result.context = (Operations.ADD, self, x)
+        # result.context = (Operations.ADD, self, x)
         return result
 
     def __mul__(self, x):
@@ -38,6 +41,39 @@ class Tensor():
         result = Tensor(self.data * x.data)
         result.context = (Operations.MUL, self, x)
         return result
+
+    def SUM(self):
+        result = Tensor(np.sum(self.data))
+        result.context = (Operations.SUM, self)
+        return result
+
+    def topo_sort(self):
+        # we are doing a DAG: https://en.wikipedia.org/wiki/Directed_acyclic_graph
+        # we only need the list of the result, in order
+        # we don't had leaf, no context
+        # we need to keep track of visited node
+        elements = set()
+        if self.context is not None:
+            ops, *parents = self.context
+            elements.add(self)
+            # for parent in parents:
+        return elements
+
+    def backward(self):
+
+        # check before doing backward, scalar variable
+        self.grad = np.array(1)
+
+        # check type before using them in backward_operations
+        # has to be checked at creation actually
+        if self.context is not None:
+            ops, *parents = self.context
+            print(self.context)
+            print(f"{self.data.shape} {ops.name}")
+            print(backward_operations[ops], parents)
+            for parent in parents:
+                print(parent.grad, parent.data)
+        return
 
 lst = [4, 4, 5, 2]
 
@@ -130,3 +166,15 @@ print("two\n", two, "---end two")
 ### Part 5 ###
 
 # Create a simple function that takes has parameters a Tensor and with the function backward wright all the Operations that created it for example F > Sum > Relu > Add > Sum
+# for the write of backward we might say this (ops) goes here and the ... rest goes here
+
+bias = Tensor([1, 2, 3, 4])
+
+mul = t_l * t_l_np
+add = mul + bias
+print(add.data.shape)
+sum = add.SUM()
+print(sum.data, sum.grad)
+sum.backward()
+elemnt = sum.topo_sort()
+print(elemnt)
