@@ -54,7 +54,9 @@ mnist:
 
 
 kernel:
-	DEBUG=4 NOOPT=1 ${PYTHON} ${EXAMPLES}/kernel.py
+	VIZ=1 NOOPT=1 ${PYTHON} ${EXAMPLES}/kernel.py
+	# VIZ=1 ${PYTHON} ${EXAMPLES}/kernel.py
+	# DEBUG=4 NOOPT=1 ${PYTHON} ${EXAMPLES}/kernel.py
 	# DEBUG=4 CPU=1 ${PYTHON} ${EXAMPLES}/kernel.py
 	# DEBUG=4 ${PYTHON} ${EXAMPLES}/kernel.py
 

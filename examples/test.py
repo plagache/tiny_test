@@ -48,18 +48,49 @@ class Tensor():
         return result
 
     def topo_sort(self):
+        """
+        takes a scalar value
+        will explore the different nodes
+        """
         # we are doing a DAG: https://en.wikipedia.org/wiki/Directed_acyclic_graph
         # we only need the list of the result, in order
         # we don't had leaf, no context
         # we need to keep track of visited node
-        elements = set()
-        if self.context is not None:
-            ops, *parents = self.context
-            elements.add(self)
+        ret = {}
+        stack = [(self, False)]
+        # visited = set()
+        while stack:
+            node, visited = stack.pop()
+            # print(visited)
+            if node in ret:
+                continue
+            if not visited:
+                if node.context is not None: # we are at an leaf
+                    ops, *parents = node.context
+                    # print(f"node context: {node.context}")
+                    stack.append((node, True))
+                    for parent in parents:
+                        stack.append((parent, False))
+            else:
+                ret[node] = None # second time i'm seeing this node, add it to returned toposort
+            print("\n--- New Stack ---")
+            for elemnt in stack:
+                node, visited = elemnt
+                print(f"{node.data}")
+            # print(f"stack: {stack}")
+        # if self.context is not None:
+        #     print(f"context: {self.context}")
+        #     ops, *parents = self.context
+            # if self not in visited:
+                # elements.append(self)
             # for parent in parents:
-        return elements
+        return ret
 
     def backward(self):
+        """
+        takes a list of nodes as a paramater (the result from the topo_sort)
+        apply backward from backward_operations[ops] on each nodes
+        """
 
         # check before doing backward, scalar variable
         self.grad = np.array(1)
@@ -68,9 +99,9 @@ class Tensor():
         # has to be checked at creation actually
         if self.context is not None:
             ops, *parents = self.context
-            print(self.context)
-            print(f"{self.data.shape} {ops.name}")
-            print(backward_operations[ops], parents)
+            # print(f"context: {self.context}")
+            # print(f"current shape, name:{self.data.shape}, {ops.name}")
+            # print(backward_operations[ops], parents)
             for parent in parents:
                 print(parent.grad, parent.data)
         return
@@ -164,6 +195,7 @@ print("two\n", two, "---end two")
 
 
 ### Part 5 ###
+print("--- Part 5 ---\n")
 
 # Create a simple function that takes has parameters a Tensor and with the function backward wright all the Operations that created it for example F > Sum > Relu > Add > Sum
 # for the write of backward we might say this (ops) goes here and the ... rest goes here
@@ -172,9 +204,9 @@ bias = Tensor([1, 2, 3, 4])
 
 mul = t_l * t_l_np
 add = mul + bias
-print(add.data.shape)
+# print(add.data.shape)
 sum = add.SUM()
-print(sum.data, sum.grad)
+# print(sum.data, sum.grad)
 sum.backward()
 elemnt = sum.topo_sort()
-print(elemnt)
+print(f"element: {elemnt}")
