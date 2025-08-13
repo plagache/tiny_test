@@ -8,7 +8,7 @@ class Operations(IntEnum):
     NEG = auto()
 
 backward_operations = {
-    Operations.ADD: lambda gradient: (gradient, gradient),
+    Operations.ADD: lambda gradient, parent: (gradient, gradient),
     Operations.MUL: lambda gradient, parents: (parents[1] * gradient, parents[0] * gradient),
     Operations.SUM: lambda gradient, parent: (np.full_like(parent, gradient)),
     Operations.NEG: lambda gradient, parents: (None),
@@ -20,7 +20,7 @@ class Tensor():
             self.data = data
         else:
             self.data = np.array(data)
-        self.grad = None
+        self.grad: np.ndarray = None
         # what created this instance
         # if context is None we are at a end of a branch
         self.context = None
@@ -49,25 +49,26 @@ class Tensor():
 
     def topo_sort(self):
         """
-        takes a scalar value
-        will explore the different nodes
+        input: a root node
+        traverse the graph in depth
+        output: list of all computed node
         """
-        # we are doing a DAG: https://en.wikipedia.org/wiki/Directed_acyclic_graph
+        # we have a DAG, https://en.wikipedia.org/wiki/Directed_acyclic_graph
+        # we are doing a DFS, https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
         # we only need the list of the result, in order
         # we don't had leaf, no context
-        # we need to keep track of visited node
+        # we need to keep track of visited node | doing that with a boolean
         ret = {} # this is our "dict" of nodes | dict have only unique element
-        stack = [(self, False)]
-        print(f"\n--- First Stack ---\n{stack}")
-        # visited = set()
+        stack = [(self, False)] # setup the root node has not visited
+        # print(f"\n--- First Stack ---\n{stack}")
         while stack:
             node, visited = stack.pop()
             if node in ret:
                 continue
             if not visited:
                 if node.context is not None:
-                    ops, *parents = node.context
                     stack.append((node, True))
+                    ops, *parents = node.context
                     for parent in parents:
                         stack.append((parent, False))
             else:
@@ -78,7 +79,7 @@ class Tensor():
 
     def backward(self):
         """
-        takes a list of nodes as a paramater (the result from the topo_sort)
+        input: a list of nodes as a paramater (the result from the topo_sort)
         apply backward from backward_operations[ops] on each nodes
         """
 
@@ -87,13 +88,22 @@ class Tensor():
 
         # check type before using them in backward_operations
         # has to be checked at creation actually
-        if self.context is not None:
-            ops, *parents = self.context
-            # print(f"context: {self.context}")
-            # print(f"current shape, name:{self.data.shape}, {ops.name}")
-            # print(backward_operations[ops], parents)
-            for parent in parents:
-                print(parent.grad, parent.data)
+
+        for element in reversed(self.topo_sort()):
+            ops, *parents = element.context
+            # print(element, ops, *parents)
+            backward_operation = backward_operations[ops]
+            gradients = backward_operation(element.data, [*parents])
+            # print(f"gradients: {gradients}")
+            # print(f"type gradients: {type(gradients)}")
+            # print(f"\nnew parents")
+            for parent, gradient in zip(parents, gradients):
+                # print(f"gradient: {gradient}")
+                # print(f"parent: {parent}")
+                if parent.grad is None:
+                    grad = gradient
+                else:
+                    grad += gradient
         return
 
     def __repr__(self):
@@ -175,7 +185,7 @@ print(add_lambda)
 # add_lambda_result = add_lambda((add_parent1.data, add_parent2.data), res_add)
 # print("add lambd result:", add_lambda_result)
 
-add_one, add_two = add_lambda(res_add.data)
+add_one, add_two = add_lambda(res_add.data, add_parent1)
 print("one\n", add_one, "---end one")
 print("add_two\n", add_two, "---end add_two")
 
@@ -203,11 +213,8 @@ bias = Tensor([1, 2, 3, 4])
 mul = t_l * t_l_np
 add = mul + bias
 # print(add.data.shape)
-sum = add.SUM()
+z = add + bias
+sum = z.SUM()
+# sum = add.SUM()
 # print(sum.data, sum.grad)
 sum.backward()
-elemnt = sum.topo_sort()
-print(f"element: {elemnt}")
-for elem in reversed(elemnt):
-    print(elem)
-
