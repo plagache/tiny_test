@@ -56,34 +56,24 @@ class Tensor():
         # we only need the list of the result, in order
         # we don't had leaf, no context
         # we need to keep track of visited node
-        ret = {}
+        ret = {} # this is our "dict" of nodes | dict have only unique element
         stack = [(self, False)]
+        print(f"\n--- First Stack ---\n{stack}")
         # visited = set()
         while stack:
             node, visited = stack.pop()
-            # print(visited)
             if node in ret:
                 continue
             if not visited:
-                if node.context is not None: # we are at an leaf
+                if node.context is not None:
                     ops, *parents = node.context
-                    # print(f"node context: {node.context}")
                     stack.append((node, True))
                     for parent in parents:
                         stack.append((parent, False))
             else:
-                ret[node] = None # second time i'm seeing this node, add it to returned toposort
-            print("\n--- New Stack ---")
-            for elemnt in stack:
-                node, visited = elemnt
-                print(f"{node.data}")
-            # print(f"stack: {stack}")
-        # if self.context is not None:
-        #     print(f"context: {self.context}")
-        #     ops, *parents = self.context
-            # if self not in visited:
-                # elements.append(self)
-            # for parent in parents:
+                ret[node] = None
+            print(f"stack: {stack}")
+            print(f"return: {ret}")
         return ret
 
     def backward(self):
@@ -105,6 +95,14 @@ class Tensor():
             for parent in parents:
                 print(parent.grad, parent.data)
         return
+
+    def __repr__(self):
+        # if self.context is not None:
+        #     print(self.context)
+        #     ops, *parents = self.context
+        #     return f"<Tensor:{self.data.shape}, {self.data}, {self.ops}>"
+        # else:
+            return f"<Tensor:{self.data.shape}, {self.data}>"
 
 lst = [4, 4, 5, 2]
 
@@ -210,3 +208,6 @@ sum = add.SUM()
 sum.backward()
 elemnt = sum.topo_sort()
 print(f"element: {elemnt}")
+for elem in reversed(elemnt):
+    print(elem)
+
