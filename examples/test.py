@@ -15,11 +15,12 @@ backward_operations = {
 }
 
 class Tensor():
-    def __init__(self, data):
+    def __init__(self, data, name=None):
         if isinstance(data, np.ndarray):
             self.data = data
         else:
             self.data = np.array(data)
+        self.name = name
         self.grad: np.ndarray = None
         # what created this instance
         # if context is None we are at a end of a branch
@@ -48,34 +49,11 @@ class Tensor():
         return result
 
     def topo_sort(self):
-        """
-        input: a root node
-        traverse the graph in depth
-        output: list of all computed node
-        """
-        # we have a DAG, https://en.wikipedia.org/wiki/Directed_acyclic_graph
-        # we are doing a DFS, https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
-        # we only need the list of the result, in order
-        # we don't had leaf, no context
-        # we need to keep track of visited node | doing that with a boolean
-        ret = {} # this is our "dict" of nodes | dict have only unique element
-        stack = [(self, False)] # setup the root node has not visited
-        # print(f"\n--- First Stack ---\n{stack}")
-        while stack:
-            node, visited = stack.pop()
-            if node in ret:
-                continue
-            if not visited:
-                if node.context is not None:
-                    stack.append((node, True))
-                    ops, *parents = node.context
-                    for parent in parents:
-                        stack.append((parent, False))
-            else:
-                ret[node] = None
-            print(f"stack: {stack}")
-            print(f"return: {ret}")
+        ret = dict()
+        stack = [(self, True)]
+
         return ret
+
 
     def backward(self):
         """
@@ -83,6 +61,7 @@ class Tensor():
         apply backward from backward_operations[ops] on each nodes
         """
 
+        operations = []
         # check before doing backward, scalar variable
         self.grad = np.array(1)
 
@@ -91,7 +70,9 @@ class Tensor():
 
         for element in reversed(self.topo_sort()):
             ops, *parents = element.context
-            # print(element, ops, *parents)
+            # print(element.__dict__['name'], Operations(ops).name, *parents)
+            # print(element, Operations(ops).name)
+            operations.append((element, Operations(ops).name))
             backward_operation = backward_operations[ops]
             gradients = backward_operation(element.data, [*parents])
             # print(f"gradients: {gradients}")
@@ -104,15 +85,24 @@ class Tensor():
                     grad = gradient
                 else:
                     grad += gradient
+
+        list_ops = []
+        for operation in operations:
+            tensor, ops = operation
+            list_ops.append(f"{ops} : {tensor.data.shape}")
+
+        result = " ---> ".join(list_ops)
+        print(f"\n\n{result}")
+
         return
 
     def __repr__(self):
         # if self.context is not None:
         #     print(self.context)
         #     ops, *parents = self.context
-        #     return f"<Tensor:{self.data.shape}, {self.data}, {self.ops}>"
+        #     return f"<{self.data.shape}, {self.data}, {ops}>"
         # else:
-            return f"<Tensor:{self.data.shape}, {self.data}>"
+            return f"<{self.data.shape}, {self.data}>"
 
 lst = [4, 4, 5, 2]
 
@@ -218,3 +208,33 @@ sum = z.SUM()
 # sum = add.SUM()
 # print(sum.data, sum.grad)
 sum.backward()
+
+    # def topo_sort(self):
+    #     """
+    #     input: a root node
+    #     traverse the graph in depth
+    #     output: list of all computed node
+    #     """
+    #     # we have a DAG, https://en.wikipedia.org/wiki/Directed_acyclic_graph
+    #     # we are doing a DFS, https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
+    #     # we only need the list of the result, in order
+    #     # we don't had leaf, no context
+    #     # we need to keep track of visited node | doing that with a boolean
+    #     ret = {} # this is our "dict" of nodes | dict have only unique element
+    #     stack = [(self, False)] # setup the root node has not visited
+    #     # print(f"\n--- First Stack ---\n{stack}")
+    #     while stack:
+    #         node, visited = stack.pop()
+    #         if node in ret:
+    #             continue
+    #         if not visited:
+    #             if node.context is not None:
+    #                 stack.append((node, True))
+    #                 ops, *parents = node.context
+    #                 for parent in parents:
+    #                     stack.append((parent, False))
+    #         else:
+    #             ret[node] = None
+    #         print(f"stack: {stack}")
+    #         print(f"return: {ret}")
+    #     return ret

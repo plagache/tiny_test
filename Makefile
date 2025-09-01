@@ -60,6 +60,9 @@ kernel:
 	# DEBUG=4 CPU=1 ${PYTHON} ${EXAMPLES}/kernel.py
 	# DEBUG=4 ${PYTHON} ${EXAMPLES}/kernel.py
 
+tiny:
+	${PYTHON} ${EXAMPLES}/test.py
+
 clean:
 
 fclean: clean
