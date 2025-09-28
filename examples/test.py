@@ -50,8 +50,17 @@ class Tensor():
 
     def topo_sort(self):
         ret = dict()
-        stack = [(self, True)]
-
+        stack = [(self, False)]
+        while stack:
+            node, visited = stack.pop()
+            if node in ret: continue
+            if not visited:
+                if node.context is not None:
+                    stack.append((node, True))
+                    ops, *parents = node.context
+                    for parent in parents: stack.append((parent, False))
+            else:
+                ret[node] = None
         return ret
 
 
@@ -210,16 +219,6 @@ sum = z.SUM()
 sum.backward()
 
     # def topo_sort(self):
-    #     """
-    #     input: a root node
-    #     traverse the graph in depth
-    #     output: list of all computed node
-    #     """
-    #     # we have a DAG, https://en.wikipedia.org/wiki/Directed_acyclic_graph
-    #     # we are doing a DFS, https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
-    #     # we only need the list of the result, in order
-    #     # we don't had leaf, no context
-    #     # we need to keep track of visited node | doing that with a boolean
     #     ret = {} # this is our "dict" of nodes | dict have only unique element
     #     stack = [(self, False)] # setup the root node has not visited
     #     # print(f"\n--- First Stack ---\n{stack}")
@@ -237,4 +236,37 @@ sum.backward()
     #             ret[node] = None
     #         print(f"stack: {stack}")
     #         print(f"return: {ret}")
+    #     return ret
+
+    # def topo_sort(self):
+    #     """
+    #     input: a root node
+    #     traverse the graph in depth
+    #     output: list of all computed node
+    #     """
+    #     # we have a DAG, https://en.wikipedia.org/wiki/Directed_acyclic_graph
+    #     # we are doing a DFS, https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
+    #     # we only need the list of the result, in order
+    #     # we don't had leaf, no context
+    #     # we need to keep track of visited node | doing that with a boolean
+    #     ret = dict()
+    #     stack = [(self, False)]
+    #     while stack:
+    #         node, visited = stack.pop()
+    #         # cognitive load reduce:
+    #         # soit la node est dans ret (nous sommes dans le rewind on veut donc continuer)
+    #         if node in ret:
+    #             continue
+    #         # soit certaine node n'ont pas encore ete explorer/visite, on veut donc verifier si il y a un context a cette node/parent
+    #         # si il y a des parent, on ajoute la node en changeant son Flag a visiter, et on ajoute les parents avec le flag non explorer
+    #         if not visited:
+    #             if node.context is not None:
+    #                 stack.append((node, True))
+    #                 ops, *parents = node.context
+    #                 for parent in parents:
+    #                     stack.append((parent, False))
+    #         # soit on est dans le rewind et l'on add les nodes qui ne sont pas dans le return
+    #         else:
+    #             ret[node] = None
+    #
     #     return ret
